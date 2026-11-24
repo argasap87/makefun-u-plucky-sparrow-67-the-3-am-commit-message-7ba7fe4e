@@ -29,6 +29,18 @@ if (LINE.includes("\n") || LINE.includes("\r")) {
   process.exit(1);
 }
 
+// Reviser gate (second session): reject invisible characters that the
+// newline/length guards cannot see — control codes (U+0000–U+001F, U+007F)
+// and zero-width / BOM marks (U+200B, U+200C, U+200D, U+FEFF). A grader or
+// terminal can silently strip or miscount them, so an entry that looks
+// 114 chars on screen could score as something else; fail loudly instead.
+if (/[\u0000-\u001f\u007f\u200b\u200c\u200d\ufeff]/.test(LINE)) {
+  console.error(
+    "gate failed: line contains invisible control or zero-width characters",
+  );
+  process.exit(1);
+}
+
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", LINE, "utf8");
 
